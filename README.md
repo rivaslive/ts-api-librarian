@@ -5,7 +5,6 @@ The backend is a simple REST API that is used to communicate with the frontend.
 ### Install dependencies
 
 ```bash
-cd ./backend
 yarn install
 ```
 
