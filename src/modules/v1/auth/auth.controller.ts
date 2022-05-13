@@ -1,6 +1,7 @@
 import UserModel from './auth.model';
 import { comparePassword } from '../../../services/encript';
 
+// eslint-disable-next-line import/prefer-default-export
 export const signIn = async (req, res) => {
   const { body } = req;
 

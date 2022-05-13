@@ -2,54 +2,41 @@ import UserModel from '../auth/auth.model';
 import { encryptPassword } from '../../../services/encript';
 
 export const getAllUsers = async (req, res) => {
-  const { search, sort, role = 'student' } = req.query;
+  // users?role=student
+  // sort = firstName:des | firstName:asc
+  const { search, sort, role = 'student,librarian' } = req.query;
 
-  // let resolveRole: any = [{ role }];
-  // const resolveSearch = [];
-  // const internalSort = sort ? sort.split(':') : ['id', 'DESC'];
-  //
-  // if (role === 'all') {
-  //   resolveRole = [
-  //     {
-  //       role: {
-  //         [Op.or]: ['student', 'librarian'],
-  //       },
-  //     },
-  //   ];
-  // }
-  //
-  // if (search) {
-  //   resolveRole = [];
-  //   resolveSearch.push({
-  //     firstName: {
-  //       [Op.like]: `%${search}%`,
-  //     },
-  //   });
-  //   resolveSearch.push({
-  //     lastName: {
-  //       [Op.like]: `%${search}%`,
-  //     },
-  //   });
-  //   resolveSearch.push({
-  //     email: {
-  //       [Op.like]: `%${search}%`,
-  //     },
-  //   });
-  // }
+  let resolveRol;
+  let resolveSort: any = { id: 'desc' };
+  let resolveSearch = {};
 
-  // const whereOr = [...resolveRole, ...resolveSearch];
+  if (role === 'all') {
+    resolveRol = ['student', 'librarian'];
+  } else {
+    resolveRol = role.split(',');
+  }
+
+  if (search) {
+    const regx = new RegExp(search, 'i');
+    resolveSearch = {
+      $or: [{ firstName: regx }, { lastName: regx }, { email: regx }],
+    };
+  }
+
+  if (sort) {
+    const arrSort: string = sort.split(':'); // => id:desc
+    const key: string = arrSort[0];
+    const value: string = arrSort[1];
+    resolveSort = { [key]: value }; // => { id: 'desc' }
+  }
 
   try {
-    // {
-    //   where: {
-    //     [Op.or]: whereOr,
-    //   },
-    //   order: [internalSort],
-    //     attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-    // }
-    const books = await UserModel.find();
+    const users = await UserModel.find({
+      role: resolveRol,
+      ...resolveSearch,
+    }).sort(resolveSort);
 
-    return res.status(200).json(books);
+    return res.status(200).json(users);
   } catch (error) {
     console.log(error);
     return res.status(500).json({
