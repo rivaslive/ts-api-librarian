@@ -1,35 +1,39 @@
-import { Op } from '@sequelize/core';
 import BookModel from '../book/book.model';
 import UserModel from '../auth/auth.model';
 import RequestBookModel from './requestBook.model';
 
 export const getAllRequestBook = async (req, res) => {
-  const { sort, state, student } = req.query;
+  const { sort, student, state = 'requested,returned' } = req.query;
 
-  const internalState: any = state ?? {
-    [Op.or]: ['requested', 'returned'],
-  };
+  let resolveSort : any = { id: 'desc' };
+  let resolveStudent;
+  let resolveState;
 
-  const internalSort = sort ? sort.split(':') : ['id', 'DESC'];
-  const whereParams = {
-    [Op.and]: [
-      ...(student
-        ? [
-            {
-              userId: student,
-            },
-          ]
-        : []),
-      {
-        state: internalState,
-      },
-    ],
-  };
+  if (sort) {
+    const arrSort: string = sort.split(':'); // => id:desc
+    const key: string = arrSort[0];
+    const value: string = arrSort[1];
+    resolveSort = { [key]: value }; // => { id: 'desc' }
+  }
+
+  if (state) {
+    resolveState = ['requested', 'returned'];
+  } else {
+    state.split(',');
+  }
+
+  if (student) {
+    const regx = new RegExp(student, 'i');
+    resolveStudent = {
+      $or: [{ userId: student }, { resolveState: regx }],
+    };
+  }
 
   try {
-    const books = await RequestBookModel.findAll({
-      order: [internalSort],
-      where: whereParams,
+    const books = await RequestBookModel.find({
+      order: [resolveSort],
+      where: resolveStudent,
+      resolveState,
       include: [
         'book',
         {
@@ -61,7 +65,7 @@ export const requestBook = async (req, res) => {
   }
 
   try {
-    const findBook = await BookModel.findByPk(payload.book);
+    const findBook = await BookModel.findById(payload.book);
     if (findBook && findBook?.stockAvailable === 0) {
       return res.status(400).json({
         code: 400,
@@ -113,7 +117,7 @@ export const returnBook = async (req, res) => {
   }
 
   try {
-    const reqBook = await RequestBookModel.findByPk(id);
+    const reqBook = await RequestBookModel.findById(id);
     if (reqBook?.state === 'returned') {
       return res.status(400).json({
         code: 400,
@@ -121,7 +125,7 @@ export const returnBook = async (req, res) => {
       });
     }
 
-    const user = await UserModel.findByPk(payload.userId);
+    const user = await UserModel.findById(payload.userId);
     if (!user && user?.role !== 'librarian') {
       return res.status(400).json({
         code: 400,
@@ -135,7 +139,7 @@ export const returnBook = async (req, res) => {
     });
 
     if (reqBook) {
-      const book = await BookModel.findByPk(reqBook.bookId);
+      const book = await BookModel.findById(reqBook.bookId);
       const newBookAvailableStock = book.stockAvailable + 1;
       // updating book available stock
       await BookModel.update(

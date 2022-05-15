@@ -1,39 +1,32 @@
-import { Op } from '@sequelize/core';
 import BookModel from './book.model';
 
 export const getAllBooks = async (req, res) => {
-  const { offset, limit, sort, search } = req.query;
+  const { sort, search } = req.query;
 
-  const internalSort = sort ? sort.split(':') : ['id', 'DESC'];
 
-  const whereOptions = search
-    ? {
-        [Op.or]: [
-          {
-            title: {
-              [Op.iLike]: `%${search}%`,
-            },
-          },
-          {
-            gender: {
-              [Op.iLike]: `%${search}%`,
-            },
-          },
-          {
-            author: {
-              [Op.iLike]: `%${search}%`,
-            },
-          },
-        ],
-      }
-    : undefined;
+  let resolveSort : any = { id: 'desc' };
+  let resolveSearch: {};
+
+  if (search) {
+    const regx = new RegExp(search, 'i');
+    resolveSearch = {
+      $or: [{title : regx},{gender : regx},{author : regx}],
+    };
+   }
+  if (sort) {
+    const arrSort: string = sort.split(':'); // => id:desc
+    const key: string = arrSort[0];
+    const value: string = arrSort[1];
+    resolveSort = { [key]: value }; // => { id: 'desc' }
+  }
+
+
+
 
   try {
-    const books = await BookModel.findAll({
-      limit,
-      offset,
-      order: [internalSort],
-      where: whereOptions,
+    const books = await BookModel.find({
+      order: [resolveSort],
+      where: resolveSearch,
     });
 
     return res.status(200).json(books);
@@ -50,7 +43,7 @@ export const getBookById = async (req, res) => {
   const { bookId } = req.params;
 
   try {
-    const book = await BookModel.findByPk(bookId);
+    const book = await BookModel.findById(bookId);
 
     if (!book) {
       return res.status(404).json({
@@ -111,7 +104,7 @@ export const updateBook = async (req, res) => {
   }
 
   try {
-    const book = await BookModel.findByPk(bookId);
+    const book = await BookModel.findByIdAndUpdate(bookId);
 
     if (!book) {
       return res.status(404).json({
@@ -153,11 +146,9 @@ export const deleteBook = async (req, res) => {
   const { bookId } = req.params;
 
   try {
-    const book = await BookModel.destroy({
-      where: {
-        id: bookId,
-      },
-    });
+    const book = await BookModel.findByIdAndDelete(
+         bookId,
+    );
 
     if (!book) {
       return res.status(404).json({
