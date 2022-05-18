@@ -13,34 +13,26 @@ export interface RequestBookInstance {
   state: 'requested' | 'returned' | 'inactive';
 }
 
-const schema = new Schema<RequestBookInstance>(
-  {
-    bookId: {
-      type: "string",
-      required: true,
-      references: {
-        model: BookModel,
-        key: 'id',
-      },
-    },
-    userId: {
-      type: "string",
-      required: true,
-      references: {
-        model: UserModel,
-        key: 'id',
-      },
-    },
-    returnDate: {
-      type: Date,
-    },
-    state: {
-      type: String,
-      enums: ['requested', 'returned', 'inactive'],
-      default: 'requested',
-    },
-  }
-);
+const schema = new Schema<RequestBookInstance>({
+  bookId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: BookModel,
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: UserModel,
+  },
+  returnDate: {
+    type: Date,
+  },
+  state: {
+    type: String,
+    enums: ['requested', 'returned', 'inactive'],
+    default: 'requested',
+  },
+});
 
 schema.set('toJSON', {
   virtuals: true,
@@ -52,4 +44,4 @@ schema.set('toJSON', {
 
 // rename name Example to singular Model
 export default mongoose.models[singularName] ||
-mongoose.model(pluralName, schema);
+  mongoose.model(pluralName, schema);

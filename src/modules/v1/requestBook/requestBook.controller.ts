@@ -5,8 +5,7 @@ import RequestBookModel from './requestBook.model';
 export const getAllRequestBook = async (req, res) => {
   const { sort, student, state = 'requested,returned' } = req.query;
 
-  let resolveSort : any = { id: 'desc' };
-  let resolveStudent;
+  let resolveSort: any = { id: 'desc' };
   let resolveState;
 
   if (sort) {
@@ -21,19 +20,16 @@ export const getAllRequestBook = async (req, res) => {
   } else {
     resolveState = ['requested', 'returned'];
   }
-  if (student) {
-    const regx = new RegExp(student, 'i');
-    resolveStudent = {
-      $and: [...(student?[{ userId: student },]:[]), { state: regx },],
-    };
-  }
+
+  const resolveStudent = {
+    $and: [...(student ? [{ userId: student }] : []), { state: resolveState }],
+  };
 
   try {
-    const books = await RequestBookModel.find({
-      ...resolveStudent,
-      ...resolveState,
-    }).sort(resolveSort);
-
+    const books = await RequestBookModel.find(resolveStudent)
+      .populate('bookId', ['title', 'author', 'publisher', 'image'])
+      .populate('userId', ['firstName', 'lastName', 'email'])
+      .sort(resolveSort);
 
     return res.status(200).json(books);
   } catch (error) {
@@ -72,12 +68,9 @@ export const requestBook = async (req, res) => {
 
     if (reqBook) {
       // updating book available stock
-      await BookModel.findByIdAndUpdate(
-        payload.book,
-        {
-          stockAvailable: findBook.stockAvailable - 1,
-        }
-      );
+      await BookModel.findByIdAndUpdate(payload.book, {
+        stockAvailable: findBook.stockAvailable - 1,
+      });
     }
 
     return res.status(200).json({
@@ -129,15 +122,12 @@ export const returnBook = async (req, res) => {
       const book = await BookModel.findById(reqBook.bookId);
       const newBookAvailableStock = book.stockAvailable + 1;
       // updating book available stock
-      await BookModel.findByIdAndUpdate(
-           reqBook.bookId,
-        {
-          stockAvailable:
-            newBookAvailableStock < book.stockBuy
-              ? newBookAvailableStock
-              : book.stockBuy,
-        }
-      );
+      await BookModel.findByIdAndUpdate(reqBook.bookId, {
+        stockAvailable:
+          newBookAvailableStock < book.stockBuy
+            ? newBookAvailableStock
+            : book.stockBuy,
+      });
     }
 
     return res.status(200).json({
