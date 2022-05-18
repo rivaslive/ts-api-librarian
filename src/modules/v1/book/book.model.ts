@@ -1,7 +1,10 @@
-import { DataTypes, Model } from '@sequelize/core';
-import { db } from '../../../services/server/db';
+import mongoose from 'mongoose';
+import getModelName from '../../../Utils/getModelName';
 
-export interface BookInstance extends Model {
+const { Schema } = mongoose;
+export const { singularName, pluralName } = getModelName('book');
+
+export interface BookInstance {
   id: number;
   title: string;
   author: string;
@@ -13,58 +16,64 @@ export interface BookInstance extends Model {
   state: 'active' | 'inactive';
 }
 
-const Book = db.define<BookInstance>(
-  'Book',
+const schema = new Schema<BookInstance>(
   {
     title: {
-      type: DataTypes.STRING(65),
-      allowNull: false,
+      type: String,
+      required: true,
     },
     author: {
-      type: DataTypes.STRING(125),
-      allowNull: false,
+      type: String,
+      required: true,
     },
     yearPublished: {
-      type: DataTypes.STRING(4),
-      allowNull: false,
+      type: String,
+      required: true,
     },
     gender: {
-      type: DataTypes.STRING(500),
-      allowNull: false,
+      type: String,
+      required: true,
     },
     image: {
-      type: DataTypes.STRING(2500),
-      allowNull: false,
+      type: String,
+      required: true,
       defaultValue: ''
     },
     stockBuy: {
-      type: DataTypes.INTEGER,
+      type: Number,
       defaultValue: 0
     },
     stockAvailable: {
-      type: DataTypes.INTEGER,
+      type: Number,
       defaultValue: 0
     },
     state: {
-      type: DataTypes.STRING,
+      type: String,
       defaultValue: 'active',
-      validate: {
-        customValidator: (value) => {
-          const enums = ['active', 'inactive']
-          if (!enums.includes(value)) {
-            throw new Error('not a valid option')
-          }
-        }
-      },
+      // validate: {
+      // customValidator: (value) => {
+      //   const enums = ['active', 'inactive']
+      //   if (!enums.includes(value)) {
+      //     throw new Error('not a valid option')
+      //   }
+      // }
     },
   },
-  {
-    // Other model options go here
-  }
 );
+// const Book.sync({ alter: true }).then(() => {
+//   console.log('Book table created or updated');
+// });
 
-Book.sync({ alter: true }).then(() => {
-  console.log('Book table created or updated');
+// export default Book;
+
+schema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform(_doc, ret) {
+    delete ret._id;
+  },
 });
 
-export default Book;
+// rename name Example to singular Model
+export default mongoose.models[singularName] ||
+mongoose.model(pluralName, schema);

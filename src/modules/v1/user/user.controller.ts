@@ -78,6 +78,7 @@ export const createUser = async (req, res) => {
       errorMessage = 'Email already exists';
     }
 
+
     return res.status(500).json({
       code: 500,
       message: errorMessage,

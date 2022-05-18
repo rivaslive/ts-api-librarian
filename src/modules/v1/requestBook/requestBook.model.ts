@@ -1,70 +1,47 @@
-import { DataTypes, Model } from '@sequelize/core';
-
+import mongoose from 'mongoose';
 import UserModel from '../auth/auth.model';
 import BookModel from '../book/book.model';
-import { db } from '../../../services/server/db';
+import getModelName from '../../../Utils/getModelName';
 
-export interface RequestBookInstance extends Model {
-  bookId: number;
-  userId: number;
-  returnDate: string;
+const { Schema } = mongoose;
+export const { singularName, pluralName } = getModelName('book-request');
+
+export interface RequestBookInstance {
+  bookId: string;
+  userId: string;
+  returnDate: Date;
   state: 'requested' | 'returned' | 'inactive';
 }
 
-const RequestBook = db.define<RequestBookInstance>(
-  'RequestBook',
-  {
-    bookId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: BookModel,
-        key: 'id',
-      },
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: UserModel,
-        key: 'id',
-      },
-    },
-    returnDate: {
-      type: DataTypes.DATE,
-    },
-    state: {
-      type: DataTypes.STRING,
-      defaultValue: 'requested',
-      validate: {
-        customValidator: (value) => {
-          const enums = ['requested', 'returned', 'inactive'];
-          if (!enums.includes(value)) {
-            throw new Error('not a valid option');
-          }
-        },
-      },
-    },
+const schema = new Schema<RequestBookInstance>({
+  bookId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: BookModel,
   },
-  {
-    // Other model options go here
-  }
-);
-
-BookModel.hasOne(RequestBook, { as: "reqBook" });
-RequestBook.belongsTo(BookModel, {
-  foreignKey: "bookId",
-  as: "book",
+  userId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: UserModel,
+  },
+  returnDate: {
+    type: Date,
+  },
+  state: {
+    type: String,
+    enums: ['requested', 'returned', 'inactive'],
+    default: 'requested',
+  },
 });
 
-UserModel.hasOne(RequestBook, { as: "reqBook2" });
-RequestBook.belongsTo(UserModel, {
-  foreignKey: "userId",
-  as: "user",
+schema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform(_doc, ret) {
+    delete ret._id;
+  },
 });
 
-RequestBook.sync({ alter: true }).then(() => {
-  console.log('RequestBook table created or updated');
-});
-
-export default RequestBook;
+// rename name Example to singular Model
+export default mongoose.models[singularName] ||
+  mongoose.model(pluralName, schema);

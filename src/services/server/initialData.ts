@@ -8,17 +8,19 @@ const {
 
 export default async function createUser() {
   try {
-    const users = await UserModel.find();
+    const userAdmin = await UserModel.findOne({ email: admin.email });
+    const userStudent = await UserModel.findOne({ email: student.email });
 
-    if (users.length === 0) {
-      const password = await encryptPassword(admin.password)
+    if (!userAdmin) {
+      const password = await encryptPassword(admin.password);
       await UserModel.create({
         ...admin,
         password,
       });
+    }
+
+    if (!userStudent) {
       await UserModel.create(student);
-    } else {
-      console.log('Users already exists');
     }
 
     console.log('=========== User default system ===========');
