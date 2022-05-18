@@ -74,10 +74,9 @@ export const createUser = async (req, res) => {
   } catch (error) {
     let errorMessage = 'Error to insert record in the database';
 
-    if (error?.name === 'SequelizeUniqueConstraintError') {
+    if (error?.message?.includes('E11000')) {
       errorMessage = 'Email already exists';
     }
-
 
     return res.status(500).json({
       code: 500,
