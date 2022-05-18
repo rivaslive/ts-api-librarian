@@ -49,22 +49,11 @@ const schema = new Schema<BookInstance>(
     },
     state: {
       type: String,
+      enum: ['active', 'inactive'],
       defaultValue: 'active',
-      // validate: {
-      // customValidator: (value) => {
-      //   const enums = ['active', 'inactive']
-      //   if (!enums.includes(value)) {
-      //     throw new Error('not a valid option')
-      //   }
-      // }
     },
   },
 );
-// const Book.sync({ alter: true }).then(() => {
-//   console.log('Book table created or updated');
-// });
-
-// export default Book;
 
 schema.set('toJSON', {
   virtuals: true,
