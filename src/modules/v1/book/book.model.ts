@@ -14,6 +14,7 @@ export interface BookInstance {
   stockBuy: number;
   stockAvailable: number;
   state: 'active' | 'inactive';
+  created_at : Date;
 }
 
 const schema = new Schema<BookInstance>(
@@ -52,6 +53,10 @@ const schema = new Schema<BookInstance>(
       enum: ['active', 'inactive'],
       defaultValue: 'active',
     },
+    created_at: {
+      type: Date,
+      default: new Date()
+    }
   },
 );
 

@@ -13,6 +13,7 @@ export interface UserInstance {
   email: string;
   password: string;
   role: 'student' | 'librarian';
+  created_at: Date;
 }
 
 const schema = new Schema<UserInstance>(
@@ -38,6 +39,10 @@ const schema = new Schema<UserInstance>(
       enum: ['student', 'librarian'],
       defaultValue: 'student',
     },
+    created_at:{
+      type: Date,
+      default: new Date(),
+    }
   },
   {
     // Other model options go here

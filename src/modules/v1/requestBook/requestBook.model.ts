@@ -11,6 +11,7 @@ export interface RequestBookInstance {
   userId: string;
   returnDate: Date;
   state: 'requested' | 'returned' | 'inactive';
+  created_at: Date;
 }
 
 const schema = new Schema<RequestBookInstance>({
@@ -31,6 +32,10 @@ const schema = new Schema<RequestBookInstance>({
     type: String,
     enums: ['requested', 'returned', 'inactive'],
     default: 'requested',
+  },
+  created_at: {
+    type: Date,
+    default: new Date(),
   },
 });
 
