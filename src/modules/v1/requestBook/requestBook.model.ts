@@ -7,8 +7,8 @@ const { Schema } = mongoose;
 export const { singularName, pluralName } = getModelName('book-request');
 
 export interface RequestBookInstance {
-  bookId: number;
-  userId: number;
+  bookId: string;
+  userId: string;
   returnDate: Date;
   state: 'requested' | 'returned' | 'inactive';
 }
@@ -16,7 +16,7 @@ export interface RequestBookInstance {
 const schema = new Schema<RequestBookInstance>(
   {
     bookId: {
-      type: Number,
+      type: "string",
       required: true,
       references: {
         model: BookModel,
@@ -24,7 +24,7 @@ const schema = new Schema<RequestBookInstance>(
       },
     },
     userId: {
-      type: Number,
+      type: "string",
       required: true,
       references: {
         model: UserModel,

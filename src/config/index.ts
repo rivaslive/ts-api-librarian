@@ -22,6 +22,7 @@ const config = {
       firstName: 'Student',
       lastName: 'User',
       email: 'student@example.com',
+      role : 'student'
     },
   },
 };

@@ -25,9 +25,9 @@ export const getAllBooks = async (req, res) => {
 
   try {
     const books = await BookModel.find({
-      order: [resolveSort],
-      where: resolveSearch,
-    });
+      sort : resolveSort,
+      ...resolveSearch,
+    }).sort(resolveSort);
 
     return res.status(200).json(books);
   } catch (error) {
@@ -104,7 +104,7 @@ export const updateBook = async (req, res) => {
   }
 
   try {
-    const book = await BookModel.findByIdAndUpdate(bookId);
+    const book = await BookModel.findByIdAndUpdate(bookId,payload);
 
     if (!book) {
       return res.status(404).json({

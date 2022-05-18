@@ -17,32 +17,23 @@ export const getAllRequestBook = async (req, res) => {
   }
 
   if (state) {
-    resolveState = ['requested', 'returned'];
+    resolveState = state.split(',');
   } else {
-    state.split(',');
+    resolveState = ['requested', 'returned'];
   }
-
   if (student) {
     const regx = new RegExp(student, 'i');
     resolveStudent = {
-      $or: [{ userId: student }, { resolveState: regx }],
+      $and: [...(student?[{ userId: student },]:[]), { state: regx },],
     };
   }
 
   try {
     const books = await RequestBookModel.find({
-      order: [resolveSort],
-      where: resolveStudent,
-      resolveState,
-      include: [
-        'book',
-        {
-          model: UserModel,
-          as: 'user',
-          attributes: ['id', 'firstName', 'lastName', 'email'],
-        },
-      ],
-    });
+      ...resolveStudent,
+      ...resolveState,
+    }).sort(resolveSort);
+
 
     return res.status(200).json(books);
   } catch (error) {
@@ -81,14 +72,10 @@ export const requestBook = async (req, res) => {
 
     if (reqBook) {
       // updating book available stock
-      await BookModel.update(
+      await BookModel.findByIdAndUpdate(
+        payload.book,
         {
           stockAvailable: findBook.stockAvailable - 1,
-        },
-        {
-          where: {
-            id: payload.book,
-          },
         }
       );
     }
@@ -142,17 +129,13 @@ export const returnBook = async (req, res) => {
       const book = await BookModel.findById(reqBook.bookId);
       const newBookAvailableStock = book.stockAvailable + 1;
       // updating book available stock
-      await BookModel.update(
+      await BookModel.findByIdAndUpdate(
+           reqBook.bookId,
         {
           stockAvailable:
             newBookAvailableStock < book.stockBuy
               ? newBookAvailableStock
               : book.stockBuy,
-        },
-        {
-          where: {
-            id: reqBook.bookId,
-          },
         }
       );
     }
