@@ -1,7 +1,7 @@
 import mongoose, { ConnectOptions } from 'mongoose';
 import config from '../../config';
 
-const { database } = config;
+const  {database} = config;
 
 const initializeDB = async (callback?: any) => {
   try {

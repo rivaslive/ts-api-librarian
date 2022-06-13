@@ -3,16 +3,16 @@ import BookModel from './book.model';
 export const getAllBooks = async (req, res) => {
   const { sort, search } = req.query;
 
-
-  let resolveSort : any = { id: 'desc' };
-  let resolveSearch: {};
+  let resolveSort: any = { id: 'desc' };
+  let resolveSearch = {};
 
   if (search) {
     const regx = new RegExp(search, 'i');
     resolveSearch = {
-      $or: [{title : regx},{gender : regx},{author : regx}],
+      $or: [{ title: regx }, { author: regx }, { gender: regx }],
     };
-   }
+  }
+
   if (sort) {
     const arrSort: string = sort.split(':'); // => id:desc
     const key: string = arrSort[0];
@@ -20,15 +20,10 @@ export const getAllBooks = async (req, res) => {
     resolveSort = { [key]: value }; // => { id: 'desc' }
   }
 
-
-
-
   try {
     const books = await BookModel.find({
-      sort : resolveSort,
       ...resolveSearch,
     }).sort(resolveSort);
-
     return res.status(200).json(books);
   } catch (error) {
     console.log(error);
@@ -69,7 +64,7 @@ export const createBook = async (req, res) => {
     !payload?.author ||
     !payload?.stockBuy ||
     !payload?.title ||
-    !payload?.image ||
+    !payload?.image||
     !payload?.yearPublished
   ) {
     return res.status(400).json({
@@ -104,7 +99,7 @@ export const updateBook = async (req, res) => {
   }
 
   try {
-    const book = await BookModel.findByIdAndUpdate(bookId,payload);
+    const book = await BookModel.findByIdAndUpdate(bookId, payload);
 
     if (!book) {
       return res.status(404).json({
@@ -127,7 +122,11 @@ export const updateBook = async (req, res) => {
         ...payload,
         stockAvailable: newAvailable,
       });
-      return res.status(200).json(book);
+      return res.status(200).json({
+        book,
+        code: 200,
+        message: 'Updated register',
+      });
     } catch (e) {
       return res.status(500).json({
         code: 500,
@@ -146,18 +145,19 @@ export const deleteBook = async (req, res) => {
   const { bookId } = req.params;
 
   try {
-    const book = await BookModel.findByIdAndDelete(
-         bookId,
-    );
-
-    if (!book) {
+    if (!bookId) {
       return res.status(404).json({
         code: 404,
         message: 'Record not found',
       });
     }
+    const book = await BookModel.findByIdAndDelete(bookId);
 
-    return res.status(200).json(book);
+    return res.status(200).json({
+      book,
+      message: 'Deleted register',
+      code: 200,
+    });
   } catch (error) {
     return res.status(500).json({
       code: 500,

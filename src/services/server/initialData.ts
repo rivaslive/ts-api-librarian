@@ -2,8 +2,7 @@ import UserModel from '../../modules/v1/auth/auth.model';
 import config from '../../config';
 import { encryptPassword } from '../encript';
 
-const {
-  users: { student, admin },
+const  {users : { student, admin} ,
 } = config;
 
 export default async function createUser() {

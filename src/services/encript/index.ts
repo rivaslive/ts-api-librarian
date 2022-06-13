@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import config from '../../config';
 
-const { saltRounds } = config;
+const  {saltRounds}  = config;
 
 export const encryptPassword = async (password: string, salt?: string): Promise<string | null> => {
   try {

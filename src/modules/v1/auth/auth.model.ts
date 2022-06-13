@@ -37,7 +37,7 @@ const schema = new Schema<UserInstance>(
     role: {
       type: String,
       enum: ['student', 'librarian'],
-      defaultValue: 'student',
+      defaultValues: 'student',
     },
     created_at:{
       type: Date,

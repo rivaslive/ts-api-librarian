@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 
-import getConfig from '../../config';
+import config from '../../config';
 import initializeDB from './db';
 
-const { port } = getConfig;
+const  {port}  = config;
 
 const app = express();
 

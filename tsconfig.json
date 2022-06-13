@@ -12,7 +12,19 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "incremental": true
+    "incremental": true,
+    "paths": {
+      "@config/*": [
+        "./src/config/*"
+      ],
+      "@middlewares/*": [
+        "./src/middlewares/*"
+      ],
+      "@utils/*": [
+        "./src/Utils/*"
+      ],
+
+    }
   },
   "include": ["./src", "./@types"],
   "exclude": ["node_modules", "**/node_modules/*", ".eslintrc"]
